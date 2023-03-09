@@ -4,21 +4,22 @@ install.packages("meta")
 install.packages("metafor")
 install.packages("devtools")
 install.packages("janitor")
+install.packages("esc")
 
 #Load the packages
 library(tidyverse)
 library(meta)
 library(metafor)
+library(janitor)
+library(esc)
 
 #Install {dmetar}
+if (!require("remotes")) {
+  install.packages("remotes")
+}
+remotes::install_github("MathiasHarrer/dmetar")
 devtools::install_github("MathiasHarrer/dmetar")
-
-#Load the tidyverse package
-library(tidyverse)
-
-#Install janitor package to help with cleaning data names 
-#install.packages("janitor")
-library(janitor)
+library(dmetar)
 
 #Setting the folder as working directory
 setwd("~/Documents/PhD/R/Doing_Meta_Analysis_in_R_Practice")
@@ -51,4 +52,28 @@ levels(SuicidePrevention$age_group)
 new.factor.levels <- c("gen", "older")
 new.factor.levels
 
+## Fixed-effect model
+# Calculate Hedges' g and the Standard Error
+# - We save the study names in "study".
+# - After that, we use the pipe operator to directly transform
+#   the results to a data frame.
+SP_calc <- esc_mean_sd(grp1m = SuicidePrevention$mean.e,
+                       grp1sd = SuicidePrevention$sd.e,
+                       grp1n = SuicidePrevention$n.e,
+                       grp2m = SuicidePrevention$mean.c,
+                       grp2sd = SuicidePrevention$sd.c,
+                       grp2n = SuicidePrevention$n.c,
+                       study = SuicidePrevention$author,
+                       es.type = "g") %>% 
+  as.data.frame()
 
+# Let us catch a glimpse of the data
+# The data set contains Hedges' g ("es") and standard error ("se")
+glimpse(SP_calc)
+
+# We now calculate the inverse variance-weights for each study
+SP_calc$w <- 1/SP_calc$se^2
+
+# Then, we use the weights to calculate the pooled effect
+pooled_effect <- sum(SP_calc$w*SP_calc$es)/sum(SP_calc$w)
+pooled_effect
