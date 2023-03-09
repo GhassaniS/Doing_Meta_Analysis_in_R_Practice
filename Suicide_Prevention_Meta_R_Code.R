@@ -77,3 +77,22 @@ SP_calc$w <- 1/SP_calc$se^2
 # Then, we use the weights to calculate the pooled effect
 pooled_effect <- sum(SP_calc$w*SP_calc$es)/sum(SP_calc$w)
 pooled_effect
+
+# Use metcont to pool results.
+m.cont <- metacont(n.e = n.e,
+                   mean.e = mean.e,
+                   sd.e = sd.e,
+                   n.c = n.c,
+                   mean.c = mean.c,
+                   sd.c = sd.c,
+                   studlab = author,
+                   data = SuicidePrevention,
+                   sm = "SMD",
+                   method.smd = "Hedges",
+                   fixed = FALSE,
+                   random = TRUE,
+                   method.tau = "REML",
+                   hakn = TRUE,
+                   title = "Suicide Prevention")
+
+summary(m.cont)
