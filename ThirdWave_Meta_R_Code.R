@@ -71,9 +71,33 @@ plot(m.gen.inf, "i2") #based on i2
 #last thing is to do GOSH plots
 #we fit the same meta-analysis model to all possible subsets 
 #why do they call it GOSH it doesn't match Graphic Display of Heterogeneity 
-#but let's generate the GOSH plot anyway
+#this makes me mad
+#but let's see what this does
 m.rma <- rma(yi = m.gen$TE,
              sei = m.gen$seTE,
              method = m.gen$method.tau,
              test = "knha")
 res.gosh <- gosh(m.rma)
+
+#generating GOSH plot
+plot(res.gosh, alpha = 0.01)
+
+#okay the output is kinda pretty
+#what is that thing on the bottom right 
+#so what causes that shape 
+#using gosh diagnostics to detect clusters and determine which studies 
+#contribute the most to each cluster 
+#if a study is over-represented in a cluster, that's the culprit 
+res.gosh.diag <- gosh.diagnostics(res.gosh, 
+                                  km.params = list(centers = 2),
+                                  db.params = list(eps = 0.08, 
+                                                   MinPts = 50))
+res.gosh.diag
+
+#looks like study 3 4 and 16 are the problem 
+#lets plot to inspect the results 
+plot(res.gosh.diag)
+
+#now let's see what happens if we remove these culprits 
+update.meta(m.gen, exclude = c(3, 4, 16)) %>% 
+  summary()
