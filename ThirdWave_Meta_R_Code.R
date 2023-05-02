@@ -101,3 +101,60 @@ plot(res.gosh.diag)
 #now let's see what happens if we remove these culprits 
 update.meta(m.gen, exclude = c(3, 4, 16)) %>% 
   summary()
+
+#the main components of a forest plot - name of each study, graph of the effect
+#size, a line representing CI
+#The point estimate is surrounded by a square - the bigger it is, the larger
+#the weight of the study 
+#the diamond on the bottom of the plot is the pooled effect 
+#the length of the diamond symbolises the CI 
+#let's generate a forest plot
+forest.meta(m.gen, 
+            sortvar = TE,
+            prediction = TRUE, 
+            print.tau2 = FALSE,
+            leftlabs = c("Author", "g", "SE"))
+
+#that looks great but let's add the risk of bias column
+forest.meta(m.gen, 
+            sortvar = TE,
+            prediction = TRUE, 
+            print.tau2 = FALSE,
+            leftcols = c("studlab", "TE", "seTE", "RiskOfBias"),
+            leftlabs = c("Author", "g", "SE", "Risk of Bias"))
+
+#trying out the JAMA pre-packaged layout 
+forest.meta(m.gen, layout = "JAMA")
+
+#whoa that's so cool
+#let's try the RevMan one 
+forest.meta(m.gen, layout = "RevMan5")
+
+#okay now I want to play around with the forest plot
+forest.meta(m.gen, 
+            sortvar = TE,
+            prediction = TRUE,
+            leftcols = c("studlab", "TE", "seTE", "RiskOfBias"),
+            leftlabs = c("Author", "g", "SE", "Risk of Bias"),
+            label.right = "Favours treatment",
+            col.square = "pink",
+            col.diamond = "purple")
+
+#printing the drapery plot 
+#this plot is based on p-value functions to prevent us 
+#from solely relying on p<0.05 significance threshold
+#this function plots a confidence curve for each study and the average effect
+#the x-axis shows the effect size metric, y-axis the assumed p-value
+
+drapery(m.gen, 
+        labels = "studlab",
+        type = "pval", 
+        legend = FALSE,
+        col.predict = "pink",
+        col.random = "purple")
+
+#the peak of the p-value functions represents the exact value of the effect size
+#then we go down the y-axis and p-value becomes smaller, while CI becomes wider 
+#until we reach conventional significance thresholds marked by the dash lines
+#in here, the pooled effect size is greater than 0 because the purple line
+#reaches 0 on the x-axis when p < 0.01
